@@ -1,5 +1,6 @@
 package ru.alishev.springmvcapp.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.*;
@@ -29,6 +30,7 @@ public class PersonDao {
             VALUES(?, ?, ?, ?);
             """;
 
+    @Autowired
     public PersonDao(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
