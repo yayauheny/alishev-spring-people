@@ -1,5 +1,7 @@
 package ru.alishev.springmvcapp.dao;
 
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.*;
 import ru.alishev.springmvcapp.entity.*;
 
@@ -8,46 +10,51 @@ import java.util.*;
 @Component
 public class PersonDao {
 
-    private List<Person> persons;
-    private static Long personCounter = 0L;
+    private final JdbcTemplate jdbcTemplate;
 
-    {
-        persons = new ArrayList<>();
+    private static final String FIND_ALL = """
+            SELECT * FROM person;
+            """;
+    private static final String FIND_BY_ID = """
+            SELECT * FROM person WHERE id=?;
+            """;
+    private static final String UPDATE = """
+            UPDATE person SET name=?, age=?, email=? WHERE id=?;
+            """;
+    private static final String DELETE = """
+            DELETE FROM person WHERE id=?;
+            """;
+    private static final String SAVE = """
+            INSERT INTO person (id, name, age, email)
+            VALUES(?, ?, ?, ?);
+            """;
 
-        persons.add(new Person(++personCounter, "Pavel", 24, "pavel@mail.ru"));
-        persons.add(new Person(++personCounter, "Artem", 37, "tema@gmail.com"));
-        persons.add(new Person(++personCounter, "Masha", 14, "mariasel@mail.ru"));
-        persons.add(new Person(++personCounter, "Andrew", 19, "sandrew@mail.ru"));
-        persons.add(new Person(++personCounter, "Margaret", 53, "mkeyle@gmail.com"));
-    }
-
-    public PersonDao() {
+    public PersonDao(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     public List<Person> findAll() {
-        return persons;
+        return jdbcTemplate.query(FIND_ALL, new BeanPropertyRowMapper<>(Person.class));
     }
 
-    public Person findById(Long id) {
-        return persons.stream()
-                .filter(person -> Objects.equals(person.getId(), id))
+    public Person findById(int id) {
+        return jdbcTemplate
+                .query(FIND_BY_ID, new BeanPropertyRowMapper<>(Person.class), id)
+                .stream()
                 .findAny()
                 .orElse(null);
     }
 
     public void save(Person person) {
-        person.setId(++personCounter);
-        persons.add(person);
+        jdbcTemplate.update(SAVE, 1, person.getName(), person.getAge(), person.getEmail());
     }
 
-    public void update(Long id, Person updatedPerson){
-        Person personToUpdate = findById(id);
-        personToUpdate.setName(updatedPerson.getName());
-        personToUpdate.setAge(updatedPerson.getAge());
-        personToUpdate.setEmail(updatedPerson.getEmail());
+    public void update(int id, Person updatedPerson) {
+        jdbcTemplate.update(UPDATE, updatedPerson.getName(), updatedPerson.getAge(),
+                updatedPerson.getEmail(), id);
     }
 
-    public void delete(Long id){
-        persons.removeIf(person -> person.getId().equals(id));
+    public void delete(int id) {
+        jdbcTemplate.update(DELETE, id);
     }
 }

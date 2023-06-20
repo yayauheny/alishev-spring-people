@@ -15,8 +15,6 @@ import ru.alishev.springmvcapp.entity.Person;
 
 import javax.validation.Valid;
 
-//import javax.validation.Valid;
-
 @Controller
 @RequestMapping("/people")
 public class PeopleController {
@@ -35,7 +33,7 @@ public class PeopleController {
     }
 
     @GetMapping("/{id}")
-    public String findById(@PathVariable("id") Long id, Model model) {
+    public String findById(@PathVariable("id") int id, Model model) {
         model.addAttribute("person", personDao.findById(id));
 
         return "people/person";
@@ -57,7 +55,7 @@ public class PeopleController {
     }
 
     @GetMapping("{id}/edit")
-    public String showUpdateForm(@PathVariable("id") Long id, Model model) {
+    public String showUpdateForm(@PathVariable("id") int id, Model model) {
         Person personToUpdate = personDao.findById(id);
         model.addAttribute("person", personToUpdate);
 
@@ -75,7 +73,7 @@ public class PeopleController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable("id") Long id) {
+    public String delete(@PathVariable("id") int id) {
         personDao.delete(id);
 
         return "redirect:/people";
